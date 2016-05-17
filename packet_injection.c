@@ -1,3 +1,7 @@
+/*
+Based on code from this link: http://hackoftheday.securitytube.net/2013/04/my-code-made-it-to-hollywood-movie.html
+*/
+
 #include <stdio.h> 
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -7,6 +11,7 @@
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
+#include <net/ethernet.h>
 
 #define PACKET_LENGTH	1024
 
@@ -73,8 +78,34 @@ int SendRawPacket(int rawsock, unsigned char *pkt, int pkt_len)
 	}
 
 	return 1;
-	
+}
 
+unsigned char* createIPHeader(){
+
+}
+
+unsigned char* createEthernetHeader(){
+	struct ethhdr *ethernet_header;
+	ethernet_header = (struct ethhdr *)malloc(sizeof(struct ethhdr));
+
+	memcpy(ethernet_header->h_source, (void *)ether_aton("aa:aa:aa:aa:aa:aa"), 6);
+	memcpy(ethernet_header->h_dest, (void *)ether_aton("bb:bb:bb:bb:bb:bb"), 6);
+	ethernet_header->h_proto = htons(ETHERTYPE_IP);
+
+	printf("hdr: %s\n",((unsigned char*)ethernet_header));
+
+	return ((unsigned char*)ethernet_header);
+}
+
+unsigned char* createEthernetHeader2(){
+	unsigned char* packet = malloc(PACKET_LENGTH);
+	memset(packet, 'A', PACKET_LENGTH);
+	int i;
+	for (i=0; i<6; i++) packet[i] = 'B';
+	for (i=0; i<6; i++) packet[i+6] = 'C';
+	for (i=0; i<2; i++) packet[i+12] = 'D';	
+
+	return packet;
 }
 
 
@@ -86,27 +117,27 @@ main(int argc, char **argv)
 {
 
 	int raw;
-	unsigned char packet[PACKET_LENGTH];
+	//unsigned char packet[PACKET_LENGTH];
+	unsigned char* packet;
 	int num_of_pkts;
+	int pkt_len;
 	
-	/* Set the packet to all A's */
-	
-	memset(packet, 'A', PACKET_LENGTH);
-
 	/* Create the raw socket */
-
 	raw = CreateRawSocket(ETH_P_ALL);
 
 	/* Bind raw socket to interface */
-
 	BindRawSocketToInterface(argv[1], raw, ETH_P_ALL);
+
+	packet = createEthernetHeader2();
+	pkt_len = PACKET_LENGTH;
+	//pkt_len = sizeof(struct ethhdr);
 
 	num_of_pkts = atoi(argv[2]);
 
 	while((num_of_pkts--)>0)
 	{
 
-		if(!SendRawPacket(raw, packet, PACKET_LENGTH))
+		if(!SendRawPacket(raw, packet, pkt_len))
 			perror("Error sending packet");
 		else
 			printf("Packet sent successfully\n");
