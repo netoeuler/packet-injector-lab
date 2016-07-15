@@ -13,6 +13,9 @@ Based on code from this link: http://hackoftheday.securitytube.net/2013/04/my-co
 #include <net/if.h>
 #include <net/ethernet.h>
 
+#include <string.h> /* memset */
+#include <unistd.h> /* close */
+
 #define PACKET_LENGTH	1024
 
 #define SRC_ETHER_ADDR  "aa:aa:aa:aa:aa:aa"
@@ -41,8 +44,8 @@ int BindRawSocketToInterface(char *device, int rawsock, int protocol)
 	struct sockaddr_ll sll;
 	struct ifreq ifr;
 
-	memset(&sll, 0, sizeof(sll));
-	memset(&ifr, 0, sizeof(ifr));
+	memset(&sll, 0, sizeof(struct sockaddr_ll));
+	memset(&ifr, 0, sizeof(struct ifreq));
 	
 	/* First Get the Interface Index  */
 	strncpy((char *)ifr.ifr_name, device, IFNAMSIZ);
@@ -108,14 +111,13 @@ int SendRawPacket(int rawsock, unsigned char *pkt, int pkt_len)
 }*/
 
 unsigned char* createEthernetHeader(){
-	int* aton_src = (int*)ether_aton(SRC_ETHER_ADDR);
-	int* aton_dst = (int*)ether_aton(DST_ETHER_ADDR);
-
 	struct ethhdr *ethernet_header;
 	ethernet_header = (struct ethhdr *)malloc(sizeof(struct ethhdr));
 
+	int aton_src = (intptr_t)ether_aton(SRC_ETHER_ADDR);
+	int aton_dst = (intptr_t)ether_aton(DST_ETHER_ADDR);
 	memcpy(&ethernet_header->h_source, &aton_src, 6);
-	memcpy(&ethernet_header->h_dest, &aton_dst, 6);	
+	memcpy(&ethernet_header->h_dest, &aton_dst, 6);
 
 	ethernet_header->h_proto = htons(ETHERTYPE_IP);
 
