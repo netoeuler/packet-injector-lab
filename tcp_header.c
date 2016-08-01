@@ -25,11 +25,9 @@ CreatePseudoHeaderAndComputeTcpChecksum(struct tcphdr *tcp_header, struct iphdr 
 	int header_len = sizeof(PseudoHeader) + segment_len;
 
 	/* Allocate the memory */
-
 	unsigned char *hdr = (unsigned char *)malloc(header_len);
 
-	/* Fill in the pseudo header first */
-	
+	/* Fill in the pseudo header first */	
 	PseudoHeader *pseudo_header = (PseudoHeader *)hdr;
 
 	pseudo_header->source_ip = ip_header->saddr;
@@ -40,15 +38,12 @@ CreatePseudoHeaderAndComputeTcpChecksum(struct tcphdr *tcp_header, struct iphdr 
 
 	
 	/* Now copy TCP */
-
 	memcpy((hdr + sizeof(PseudoHeader)), (void *)tcp_header, tcp_header->doff*4);
 
 	/* Now copy the Data */
-
 	memcpy((hdr + sizeof(PseudoHeader) + tcp_header->doff*4), data, DATA_SIZE);
 
 	/* Calculate the Checksum */
-
 	tcp_header->check = ComputeChecksum(hdr, header_len);
 
 	/* Free the PseudoHeader */

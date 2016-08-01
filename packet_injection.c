@@ -83,6 +83,11 @@ int SendRawPacket(int rawsock, unsigned char *pkt, int pkt_len){
    argv[2] is the number of packets to send
 */ 
 int main(int argc, char **argv){
+	if (argc < 2){
+		perror("Arguments?\n");
+		return 1;
+	}
+
 	int raw;
 	unsigned char* packet;
 	struct ethhdr *ethernet_header;
@@ -105,7 +110,7 @@ int main(int argc, char **argv){
 	data = CreateData(DATA_SIZE);
 
 	/* Create PseudoHeader and compute TCP Checksum  */
-	CreatePseudoHeaderAndComputeTcpChecksum(tcp_header, ip_header, data);
+	//CreatePseudoHeaderAndComputeTcpChecksum(tcp_header, ip_header, data);
 
 	pkt_len = sizeof(struct ethhdr) + sizeof(struct iphdr);
 

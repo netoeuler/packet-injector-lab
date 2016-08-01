@@ -1,49 +1,26 @@
 #define SRC_IP	"192.168.0.10"
 #define DST_IP	"192.168.0.11"
 
-/* Ripped from Richard Stevans Book */
-unsigned short ComputeIpChecksum(unsigned char *header, int len){
-	long sum = 0;  /* assume 32 bit long, 16 bit short */
- 	unsigned short *ip_header = (unsigned short *)header;
+unsigned short ComputeChecksum(unsigned char *data, int len)
+{
+     long sum = 0;  /* assume 32 bit long, 16 bit short */
+	 unsigned short *temp = (unsigned short *)data;
 
      while(len > 1){
-         //sum += *((unsigned short*) ip_header)++;
-     	sum += *((unsigned short*) ip_header);
-     	ip_header++;
+         sum += *temp;
+         temp++;
          if(sum & 0x80000000)   /* if high order bit set, fold */
-         	sum = (sum & 0xFFFF) + (sum >> 16);
+           sum = (sum & 0xFFFF) + (sum >> 16);
          len -= 2;
      }
 
      if(len)       /* take care of left over byte */
-         sum += (unsigned short) *(unsigned char *)ip_header;
+         sum += (unsigned short) *((unsigned char *)temp);
       
      while(sum>>16)
          sum = (sum & 0xFFFF) + (sum >> 16);
 
     return ~sum;
-}
-
-/* Ripped from Richard Stevans Book */
-unsigned short ComputeChecksum(unsigned char *data, int len)
-{
-         long sum = 0;  /* assume 32 bit long, 16 bit short */
-	 unsigned short *temp = (unsigned short *)data;
-
-         while(len > 1){
-             sum += *temp++;
-             if(sum & 0x80000000)   /* if high order bit set, fold */
-               sum = (sum & 0xFFFF) + (sum >> 16);
-             len -= 2;
-         }
-
-         if(len)       /* take care of left over byte */
-             sum += (unsigned short) *((unsigned char *)temp);
-          
-         while(sum>>16)
-             sum = (sum & 0xFFFF) + (sum >> 16);
-
-        return ~sum;
 }
 
 //unsigned char* createIPHeader(){
@@ -65,8 +42,7 @@ struct iphdr* CreateIPHeader(){
 	ip_header->daddr = inet_addr(DST_IP);
 
 	// Calculate the IP checksum now : The IP Checksum is only over the IP header
-	//ip_header->check = ComputeChecksum((unsigned char *)ip_header, ip_header->ihl*4);
+	ip_header->check = ComputeChecksum((unsigned char *)ip_header, ip_header->ihl*4);
 
-	//return ((unsigned char *)ip_header);
 	return ((struct iphdr*)ip_header);
 }
