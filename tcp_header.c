@@ -61,9 +61,9 @@ struct tcphdr *CreateTcpHeader(){ /* Customization Exercise */
 	
 	tcp_header->source = htons(SRC_PORT);
 	tcp_header->dest = htons(DST_PORT);
-	tcp_header->seq = htonl(111);
-	tcp_header->ack_seq = htonl(111);
-	tcp_header->res1 = 0;
+	tcp_header->seq = htonl(0);
+	tcp_header->ack_seq = htonl(0);
+	//tcp_header->res1 = 0;
 	tcp_header->doff = (sizeof(struct tcphdr))/4;
 	tcp_header->syn = 1;
 	tcp_header->window = htons(100);
@@ -75,10 +75,11 @@ struct tcphdr *CreateTcpHeader(){ /* Customization Exercise */
 
 unsigned char *CreateData(int len){
 	unsigned char *data = (unsigned char *)malloc(len);  
+	#if 0
 	struct timeval tv;
 	struct timezone tz;
 	int counter = len;	
-
+	
 	/* get time of the day */
 	gettimeofday(&tv, &tz);
 
@@ -88,6 +89,10 @@ unsigned char *CreateData(int len){
 	/* Add random data for now */
 	for(counter = 0  ; counter < len; counter++)
 		data[counter] = 255.0 *rand()/(RAND_MAX +1.0);
+	#endif
+
+	int i;
+	for(i=0;i<len;i++) data[i] = '0';
 
 	return data;
 }

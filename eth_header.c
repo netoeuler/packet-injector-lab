@@ -1,5 +1,5 @@
-#define SRC_ETHER_ADDR  "aa:aa:aa:aa:aa:aa"
-#define DST_ETHER_ADDR	"bb:bb:bb:bb:bb:bb"
+#define SRC_ETHER_ADDR  "xx:aa:aa:aa:aa:aa"
+#define DST_ETHER_ADDR	"xx:xx:xx:aa:aa:aa"
 
 //unsigned char* createEthernetHeader(){
 struct ethhdr* CreateEthernetHeader(){

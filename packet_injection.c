@@ -112,7 +112,8 @@ int main(int argc, char **argv){
 	/* Create PseudoHeader and compute TCP Checksum  */
 	//CreatePseudoHeaderAndComputeTcpChecksum(tcp_header, ip_header, data);
 
-	pkt_len = sizeof(struct ethhdr) + sizeof(struct iphdr);
+	//pkt_len = sizeof(struct ethhdr) + sizeof(struct iphdr);
+	pkt_len = sizeof(struct ethhdr) + ntohs(ip_header->tot_len);
 
 	packet = (unsigned char *) malloc(pkt_len);
 	memcpy(packet, ethernet_header, sizeof(struct ethhdr));
