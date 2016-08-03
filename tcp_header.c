@@ -1,23 +1,16 @@
-#include "ip_header.c"
-
-#define DATA_SIZE 100
-
-#define SRC_PORT	1820
-#define DST_PORT	1821
+#define SRC_PORT	80
+#define DST_PORT	100
 
 typedef struct PseudoHeader{
-
 	unsigned long int source_ip;
 	unsigned long int dest_ip;
 	unsigned char reserved;
 	unsigned char protocol;
 	unsigned short int tcp_length;
-
 }PseudoHeader;
 
-CreatePseudoHeaderAndComputeTcpChecksum(struct tcphdr *tcp_header, struct iphdr *ip_header, unsigned char *data){
-	/*The TCP Checksum is calculated over the PseudoHeader + TCP header +Data*/
-
+/*The TCP Checksum is calculated over the PseudoHeader + TCP header +Data*/
+void CreatePseudoHeaderAndComputeTcpChecksum(struct tcphdr *tcp_header, struct iphdr *ip_header, unsigned char *data){
 	/* Find the size of the TCP Header + Data */
 	int segment_len = ntohs(ip_header->tot_len) - ip_header->ihl*4; 
 
@@ -35,7 +28,6 @@ CreatePseudoHeaderAndComputeTcpChecksum(struct tcphdr *tcp_header, struct iphdr 
 	pseudo_header->reserved = 0;
 	pseudo_header->protocol = ip_header->protocol;
 	pseudo_header->tcp_length = htons(segment_len);
-
 	
 	/* Now copy TCP */
 	memcpy((hdr + sizeof(PseudoHeader)), (void *)tcp_header, tcp_header->doff*4);
@@ -52,18 +44,17 @@ CreatePseudoHeaderAndComputeTcpChecksum(struct tcphdr *tcp_header, struct iphdr 
 	return ;
 }
 
-struct tcphdr *CreateTcpHeader(){ /* Customization Exercise */
+struct tcphdr *CreateTcpHeader(){
 	struct tcphdr *tcp_header;
 
-	/* Check /usr/include/linux/tcp.h for header definiation */
+	/* Check /usr/include/linux/tcp.h for header definition */
 	tcp_header = (struct tcphdr *)malloc(sizeof(struct tcphdr));
-
 	
 	tcp_header->source = htons(SRC_PORT);
 	tcp_header->dest = htons(DST_PORT);
-	tcp_header->seq = htonl(0);
-	tcp_header->ack_seq = htonl(0);
-	//tcp_header->res1 = 0;
+	tcp_header->seq = htonl(1);
+	tcp_header->ack_seq = htonl(1);
+	tcp_header->res1 = 0;
 	tcp_header->doff = (sizeof(struct tcphdr))/4;
 	tcp_header->syn = 1;
 	tcp_header->window = htons(100);
@@ -75,10 +66,10 @@ struct tcphdr *CreateTcpHeader(){ /* Customization Exercise */
 
 unsigned char *CreateData(int len){
 	unsigned char *data = (unsigned char *)malloc(len);  
+	int counter;	
 	#if 0
 	struct timeval tv;
-	struct timezone tz;
-	int counter = len;	
+	struct timezone tz;	
 	
 	/* get time of the day */
 	gettimeofday(&tv, &tz);
@@ -88,11 +79,10 @@ unsigned char *CreateData(int len){
 	
 	/* Add random data for now */
 	for(counter = 0  ; counter < len; counter++)
-		data[counter] = 255.0 *rand()/(RAND_MAX +1.0);
+		data[counter] = 255.0 *rand()/(RAND_MAX +1.0);	
 	#endif
 
-	int i;
-	for(i=0;i<len;i++) data[i] = '0';
+	for(counter = 0 ; counter < len ; counter++) data[counter] = 'k';
 
 	return data;
 }

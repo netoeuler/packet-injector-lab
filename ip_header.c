@@ -1,29 +1,6 @@
 #define SRC_IP	"192.168.0.10"
 #define DST_IP	"192.168.0.11"
 
-unsigned short ComputeChecksum(unsigned char *data, int len)
-{
-     long sum = 0;  /* assume 32 bit long, 16 bit short */
-	 unsigned short *temp = (unsigned short *)data;
-
-     while(len > 1){
-         sum += *temp;
-         temp++;
-         if(sum & 0x80000000)   /* if high order bit set, fold */
-           sum = (sum & 0xFFFF) + (sum >> 16);
-         len -= 2;
-     }
-
-     if(len)       /* take care of left over byte */
-         sum += (unsigned short) *((unsigned char *)temp);
-      
-     while(sum>>16)
-         sum = (sum & 0xFFFF) + (sum >> 16);
-
-    return ~sum;
-}
-
-//unsigned char* createIPHeader(){
 struct iphdr* CreateIPHeader(){
 	struct iphdr *ip_header;
 
@@ -32,7 +9,7 @@ struct iphdr* CreateIPHeader(){
 	ip_header->version = 4;
 	ip_header->ihl = (sizeof(struct iphdr))/4 ;
 	ip_header->tos = 0;
-	ip_header->tot_len = htons(sizeof(struct iphdr));
+	ip_header->tot_len = htons(sizeof(struct iphdr) + sizeof(struct tcphdr) + DATA_SIZE);
 	ip_header->id = htons(111);
 	ip_header->frag_off = 0;
 	ip_header->ttl = 111;

@@ -2,7 +2,7 @@
 Based on code from this link: http://hackoftheday.securitytube.net/2013/04/my-code-made-it-to-hollywood-movie.html
 */
 
-#include <stdio.h> 
+#include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
 #include <features.h>
@@ -13,18 +13,20 @@ Based on code from this link: http://hackoftheday.securitytube.net/2013/04/my-co
 #include <net/if.h>
 #include <net/ethernet.h>
 #include <linux/ip.h>
-#include <arpa/inet.h> //IPPROTO_TCP
 #include <linux/tcp.h>
-#include <sys/time.h>
+#include <arpa/inet.h> //IP_PROTOTCP
+//#include <sys/time.h>
 
 #include <string.h> /* memset */
 #include <unistd.h> /* close */
 
-#include "eth_header.c"
-//#include "ip_header.c"
-#include "tcp_header.c"
-
 #define PACKET_LENGTH	1024
+#define DATA_SIZE 		100
+
+#include "validator.c"
+#include "eth_header.c"
+#include "ip_header.c"
+#include "tcp_header.c"
 
 int CreateRawSocket(int protocol_to_sniff){
 	int rawsock;
@@ -42,8 +44,11 @@ int BindRawSocketToInterface(char *device, int rawsock, int protocol){
 	struct sockaddr_ll sll;
 	struct ifreq ifr;
 
-	memset(&sll, 0, sizeof(struct sockaddr_ll));
-	memset(&ifr, 0, sizeof(struct ifreq));
+	//memset(&sll, 0, sizeof(struct sockaddr_ll));
+	//memset(&ifr, 0, sizeof(struct ifreq));
+
+	bzero(&sll, sizeof(sll));
+	bzero(&ifr, sizeof(ifr));
 	
 	/* First Get the Interface Index  */
 	strncpy((char *)ifr.ifr_name, device, IFNAMSIZ);
@@ -83,7 +88,7 @@ int SendRawPacket(int rawsock, unsigned char *pkt, int pkt_len){
    argv[2] is the number of packets to send
 */ 
 int main(int argc, char **argv){
-	if (argc < 2){
+	if (argc < 1){
 		perror("Arguments?\n");
 		return 1;
 	}
@@ -102,7 +107,7 @@ int main(int argc, char **argv){
 
 	/* Bind raw socket to interface */
 	BindRawSocketToInterface(argv[1], raw, ETH_P_ALL);
-	num_of_pkts = atoi(argv[2]);
+	//num_of_pkts = atoi(argv[2]);
 
 	ethernet_header = CreateEthernetHeader();
 	ip_header = CreateIPHeader();
@@ -110,7 +115,7 @@ int main(int argc, char **argv){
 	data = CreateData(DATA_SIZE);
 
 	/* Create PseudoHeader and compute TCP Checksum  */
-	//CreatePseudoHeaderAndComputeTcpChecksum(tcp_header, ip_header, data);
+	CreatePseudoHeaderAndComputeTcpChecksum(tcp_header, ip_header, data);
 
 	//pkt_len = sizeof(struct ethhdr) + sizeof(struct iphdr);
 	pkt_len = sizeof(struct ethhdr) + ntohs(ip_header->tot_len);
@@ -121,12 +126,12 @@ int main(int argc, char **argv){
 	memcpy((packet + sizeof(struct ethhdr) + ip_header->ihl*4),tcp_header, tcp_header->doff*4);
 	memcpy((packet + sizeof(struct ethhdr) + ip_header->ihl*4 + tcp_header->doff*4), data, DATA_SIZE);
 
-	while((num_of_pkts--)>0){
+	//while((num_of_pkts--)>0){
 		if(!SendRawPacket(raw, packet, pkt_len))
 			perror("Error sending packet");
 		else
 			printf("Packet sent successfully\n");
-	}
+	//}
 
 	/*free(ethernet_header);
 	free(ip_header);
